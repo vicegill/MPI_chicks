@@ -1,0 +1,43 @@
+---
+title: "MPI_Chicks"
+author: "Jaskaran Singh Gill"
+date: "2023-08-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,error = FALSE,warning = FALSE, message = FALSE)
+```
+
+
+##Clearing the data space
+```{r}
+rm(list=ls())
+```
+##LOADING THE REQUIRED PACKAGES 
+```{r}
+library(tidyverse)
+library(lme4)
+library(lmerTest)
+```
+
+##loading data
+```{r}
+data_mass <- read.csv2(file="/Users/vicegill/popgen/MPI_chicks/ProteinChickGRTI2023_renamed_improved.csv",header = TRUE)
+str(data_mass)
+data_mass <-data_mass %>% filter(!is.na(Mass.Tissue))
+data_mass <- data_mass[,c("Bird.ID","Mass.Tissue","Batch")]
+data_protein <- read.csv2(file = "/Users/vicegill/popgen/MPI_chicks/protein_csv.csv",header = TRUE)
+colnames(data_protein) <- c("Bird.ID","Protein.Conc")
+data_combine <- inner_join(data_mass,data_protein,by="Bird.ID")
+plot <- data_combine %>% ggplot(aes(x=Mass.Tissue,y=Protein.Conc)) +
+        geom_point(aes(color=Batch))
+plot
+plot_dens_mass <- data_combine %>% ggplot(aes(x=Protein.Conc))+
+                  geom_density()
+plot_dens_mass
+summary(lmer(Mass.Tissue~log(Protein.Conc)+(1|Batch), data=data_combine))
+cor.test(data_combine$Mass.Tissue,log(data_combine$Protein.Conc))
+```
+
+
